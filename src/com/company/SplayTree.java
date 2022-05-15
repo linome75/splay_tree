@@ -45,28 +45,20 @@ public class SplayTree {
         zig(child, child.parent);
     }
 
-//
-//    public void rotate(SplayNode parent, SplayNode child) {
-//        SplayNode keeper;
-//        SplayNode grandparent = parent.parent;
-//        if (grandparent != null) {
-//            if (grandparent.left == parent)
-//                grandparent.left = child;
-//            else grandparent.right = child;
-//        }
-//        if (parent.left == child) {
-//            keeper = parent.left;
-//            parent.left = child.right;
-//            child.right = keeper;
-//        } else {
-//            keeper = parent.right;
-//            parent.right = child.left;
-//            child.left = keeper;
-//        }
-//        keepParent(child);
-//        keepParent(parent);
-//        child.parent = grandparent;
-//
-//    }
+   public SplayNode splay(SplayNode target) {
+        if (target.parent == null) return target;
+        SplayNode parent = target.parent;
+        SplayNode grandParent = parent.parent;
+        if (grandParent == null) {
+            zig(target, parent);
+            return target;
+        } else {
+            if ((grandParent.left == parent && parent.left == target)||
+                    (grandParent.right == parent && parent.right == target)){
+                zigZig(target, parent);
+            } else zigZag(target, parent);
+        }
+        return splay(target);
+   }
 }
 
