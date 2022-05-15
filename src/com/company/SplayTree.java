@@ -1,5 +1,7 @@
 package com.company;
 
+import jdk.internal.net.http.common.Pair;
+
 public class SplayTree {
     private SplayNode root;
 
@@ -30,7 +32,9 @@ public class SplayTree {
             parent.right = child.left;
             child.left = parent;
         }
-        keepParent(grandparent);
+        if (grandparent != null) {
+            keepParent(grandparent);
+        }
         keepParent(child);
         keepParent(parent);
     }
@@ -45,7 +49,7 @@ public class SplayTree {
         zig(child, child.parent);
     }
 
-   private SplayNode splay(SplayNode target) {
+    private SplayNode splay(SplayNode target) {
         if (target.parent == null) return target;
         SplayNode parent = target.parent;
         SplayNode grandParent = parent.parent;
@@ -53,15 +57,15 @@ public class SplayTree {
             zig(target, parent);
             return target;
         } else {
-            if ((grandParent.left == parent && parent.left == target)||
-                    (grandParent.right == parent && parent.right == target)){
+            if ((grandParent.left == parent && parent.left == target) ||
+                    (grandParent.right == parent && parent.right == target)) {
                 zigZig(target, parent);
             } else zigZag(target, parent);
         }
         return splay(target);
-   }
+    }
 
-   public SplayNode find(SplayNode node, int key){
+    public SplayNode find(SplayNode node, int key) {
         if (node == null) return null;
         if (key == node.key)
             return splay(node);
@@ -70,10 +74,27 @@ public class SplayTree {
         if (key > node.key && node.right != null)
             return find(node.right, key);
         return splay(node);
-   }
+    }
 
-//   private SplayTree split(SplayNode root, int key){
-//        if (root == null) return null;
-//   }
+    public Pair<SplayNode, SplayNode> split(SplayNode node, int key) {
+        if (node == null) return null;
+        node = find(node, key);
+        if (node.key == key) {
+            setParent(node.left, null);
+            setParent(node.right, null);
+            return new Pair<SplayNode, SplayNode>(node.left, node.right);
+        }
+        if (node.key < key) {
+            SplayNode rightNode = node.right;
+            setParent(rightNode, null);
+            node.right = null;
+            return new Pair<SplayNode, SplayNode>(node, rightNode);
+        } else {
+            SplayNode leftNode = node.left;
+            setParent(leftNode, null);
+            node.left = null;
+            return new Pair<SplayNode, SplayNode>(node, leftNode);
+        }
+    }
 }
 
