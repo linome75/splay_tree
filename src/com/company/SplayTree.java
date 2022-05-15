@@ -45,7 +45,7 @@ public class SplayTree {
         zig(child, child.parent);
     }
 
-   public SplayNode splay(SplayNode target) {
+   private SplayNode splay(SplayNode target) {
         if (target.parent == null) return target;
         SplayNode parent = target.parent;
         SplayNode grandParent = parent.parent;
@@ -60,5 +60,20 @@ public class SplayTree {
         }
         return splay(target);
    }
+
+   public SplayNode find(SplayNode node, int key){
+        if (node == null) return null;
+        if (key == node.key)
+            return splay(node);
+        if (key < node.key && node.left != null)
+            return find(node.left, key);
+        if (key > node.key && node.right != null)
+            return find(node.right, key);
+        return splay(node);
+   }
+
+//   private SplayTree split(SplayNode root, int key){
+//        if (root == null) return null;
+//   }
 }
 
