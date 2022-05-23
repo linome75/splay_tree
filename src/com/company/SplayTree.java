@@ -1,6 +1,8 @@
 package com.company;
 
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -133,18 +135,18 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         }
     }
 
-    public boolean insert(T value) {
-        if (!contains(value)) size++;
-        return insert(root, value);
-    }
+//    public boolean insert(T value) {
+//        if (!contains(value)) size++;
+//        return insert(root, value);
+//    }
 
     private boolean insert(Node<T> node, T value) {
         if (root.value == null) {
             root.value = value;
             return true;
         }
-            node = split(node, value);
-            keepParent(node);
+        node = split(node, value);
+        keepParent(node);
         root = node;
         return true;
     }
@@ -178,7 +180,7 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         getTree(root);
     }
 
-    public void getTree(Node<T> node) {
+    private void getTree(Node<T> node) {
         if (node == null) {
             System.out.println("null");
             return;
@@ -202,7 +204,7 @@ public class SplayTree<T extends Comparable<T>> implements Set {
 
     @Override
     public boolean isEmpty() {
-        return (root == null);
+        return (size == 0);
     }
 
     @Override
@@ -217,7 +219,14 @@ public class SplayTree<T extends Comparable<T>> implements Set {
 
     @Override
     public Object[] toArray() {
-        return new Object[0];
+        Object[] a = new Object[size];
+        int i = 0;
+        while (!isEmpty()) {
+            a[i] = root.value;
+            remove(root.value);
+            i++;
+        }
+        return a;
     }
 
     @Override
@@ -242,38 +251,47 @@ public class SplayTree<T extends Comparable<T>> implements Set {
 
     @Override
     public boolean addAll(Collection c) {
-        Object[] arr = c.toArray();
-        for (int i = 0; i < arr.length; i++)
-            return add(arr[i]);
+        for (Object i : c) add((T) i);
         return true;
     }
 
     @Override
     public void clear() {
-
+        while (!isEmpty()) remove(root);
     }
 
     @Override
     public boolean removeAll(Collection c) {
-        Object[] arr = c.toArray();
-        for (int i = 0; i < arr.length; i++)
-            return remove(arr[i]);
+        for (Object i : c) remove((T) i);
         return true;
     }
 
     @Override
     public boolean retainAll(Collection c) {
+        Object[] arr = toArray();
+        for (Object i : arr) if (!c.contains(i)) remove(i);
         return false;
     }
 
     @Override
     public boolean containsAll(Collection c) {
-        return false;
+        for (Object i : c) {
+            if (!contains((T) i))
+                return false;
+        }
+        return true;
     }
 
     @Override
     public Object[] toArray(Object[] a) {
-        return new Object[0];
+        if (a.length < size) a = new Object[size];
+        int i = 0;
+        while (i < size) {
+            a[i] = root.value;
+            remove(root.value);
+            i++;
+        }
+        return a;
     }
 }
 

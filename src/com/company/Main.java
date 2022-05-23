@@ -1,19 +1,25 @@
 package com.company;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class Main {
 
     public static void main(String[] args) {
         SplayTree<Integer> tree = new SplayTree<Integer>();
-        tree.insert(4);
-//        tree.remove(4);
-        tree.insert(6);
-        tree.insert(5);
-        tree.getTree();
+        HashSet<Integer> set = new HashSet<Integer>();
+        set.add(4);
+        set.add(5);
+        set.add(6);
+        tree.addAll(set);
+       //tree.getTree();
         System.out.println();
-        tree.find(4);
-        tree.getTree();
-        System.out.println();
+        //tree.remove(5);
+       // tree.getTree();
+        Integer[] asd = new Integer[3];
+        System.out.println(tree.toArray()[0]);
 //        tree.remove(4);
-        tree.getTree();
     }
 }
