@@ -3,8 +3,9 @@ package com.company;
 public class Main {
 
     public static void main(String[] args) {
-        SplayTree tree = new SplayTree();
+        SplayTree<Integer> tree = new SplayTree<Integer>();
         tree.insert(4);
+//        tree.remove(4);
         tree.insert(6);
         tree.insert(5);
         tree.getTree();
@@ -12,7 +13,7 @@ public class Main {
         tree.find(4);
         tree.getTree();
         System.out.println();
-        tree.remove(7);
+//        tree.remove(4);
         tree.getTree();
     }
 }

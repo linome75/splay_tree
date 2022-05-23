@@ -5,28 +5,33 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-public class SplayTree implements Set {
-    private SplayNode root;
-    private int size;
-    public SplayTree() {
-        root = null;
+public class SplayTree<T extends Comparable<T>> implements Set {
+    private static class Node<T> {
+        T value;
+        Node<T> left, right, parent;
+
+        Node(T value, Node<T> left, Node<T> right, Node<T> parent) {
+            this.value = value;
+            this.left = left;
+            this.right = right;
+            this.parent = parent;
+        }
     }
 
-    public SplayNode getRoot() {
-        return root;
-    }
+    private Node<T> root = new Node<T>(null, null, null, null);
+    private int size = 0;
 
-    public void setParent(SplayNode child, SplayNode parent) {
+    public void setParent(Node<T> child, Node<T> parent) {
         if (child != null) child.parent = parent;
     }
 
-    public void keepParent(SplayNode parent) {
+    public void keepParent(Node<T> parent) {
         setParent(parent.left, parent);
         setParent(parent.right, parent);
     }
 
-    private void zig(SplayNode child, SplayNode parent) {
-        SplayNode grandparent = parent.parent;
+    private void zig(Node<T> child, Node<T> parent) {
+        Node<T> grandparent = parent.parent;
         if (grandparent != null) {
             if (grandparent.left == parent)
                 grandparent.left = child;
@@ -44,98 +49,107 @@ public class SplayTree implements Set {
         keepParent(parent);
     }
 
-    private void zigZig(SplayNode child, SplayNode parent) {
+    private void zigZig(Node<T> child, Node<T> parent) {
         zig(parent, parent.parent);
         zig(child, parent);
     }
 
-    private void zigZag(SplayNode child, SplayNode parent) {
+    private void zigZag(Node<T> child, Node<T> parent) {
         zig(child, parent);
         zig(child, child.parent);
     }
 
-    private SplayNode splay(SplayNode target) {
-        if (target.parent == null) {
-            root = target;
-            return target;
+    private boolean splay(Node<T> node) {
+        if (node.parent == null) {
+            root = node;
+            return true;
         }
-        SplayNode parent = target.parent;
-        SplayNode grandParent = parent.parent;
+        Node<T> parent = node.parent;
+        Node<T> grandParent = parent.parent;
         if (grandParent == null) {
-            zig(target, parent);
-            root = target;
-            return target;
+            zig(node, parent);
+            root = node;
+            return true;
         } else {
-            if ((grandParent.left == parent && parent.left == target) ||
-                    (grandParent.right == parent && parent.right == target)) {
-                zigZig(target, parent);
-            } else zigZag(target, parent);
+            if ((grandParent.left == parent && parent.left == node) ||
+                    (grandParent.right == parent && parent.right == node)) {
+                zigZig(node, parent);
+            } else zigZag(node, parent);
         }
-        return splay(target);
-    }
-
-    public SplayNode find(int key) {
-        return find(root, key);
-    }
-
-    private SplayNode find(SplayNode node, int key) {
-        if (node == null) return null;
-        if (key == node.key)
-            return splay(node);
-        if (key < node.key && node.left != null)
-            return find(node.left, key);
-        if (key > node.key && node.right != null)
-            return find(node.right, key);
         return splay(node);
     }
 
-    private boolean findToRemove(SplayNode node, int key) {
-        if (node.key == key) return true;
-        if (key < node.key && node.left != null)
-            return findToRemove(node.left, key);
-        if (key > node.key && node.right != null)
-            return findToRemove(node.right, key);
+    public boolean find(T value) {
+        return find(root, value);
+    }
+
+    private boolean find(Node<T> node, T value) {
+        if (node.value == null) return false;
+        int comparison = value.compareTo(node.value);
+        if (comparison == 0)
+            return splay(node);
+        if (comparison < 0 && node.left != null)
+            return find(node.left, value);
+        if (comparison > 0 && node.right != null)
+            return find(node.right, value);
+        return splay(node);
+    }
+
+    private boolean contains(Node<T> node, T value) {
+        if (node.value == null) return false;
+        int comparison = value.compareTo(node.value);
+        if (comparison == 0) return true;
+        if (comparison < 0 && node.left != null)
+            return contains(node.left, value);
+        if (comparison > 0 && node.right != null)
+            return contains(node.right, value);
         return false;
     }
 
-    public SplayNode split(int key) {
-        return split(root, key);
+    public Node<T> split(T value) {
+        return split(root, value);
     }
 
-    private SplayNode split(SplayNode node, int key) {
-        if (node == null) return new SplayNode(key);
-        node = find(node, key);
-        if (node.key == key) {
+    private Node<T> split(Node<T> node, T value) {
+        if (node == null) return null;
+        find(node, value);
+        node = root;
+        int comparison = value.compareTo(node.value);
+        if (comparison == 0) {
             setParent(node.left, null);
             setParent(node.right, null);
-            return new SplayNode(key, node.left, node.right, null);
+            return new Node<T>(value, node.left, node.right, null);
         }
-        if (node.key < key) {
-            SplayNode rightNode = node.right;
+        if (comparison > 0) {
+            Node<T> rightNode = node.right;
             setParent(rightNode, null);
             node.right = null;
-            return new SplayNode(key, node, rightNode, null);
+            return new Node<T>(value, node, rightNode, null);
         } else {
-            SplayNode leftNode = node.left;
+            Node<T> leftNode = node.left;
             setParent(leftNode, null);
             node.left = null;
-            return new SplayNode(key, node, leftNode, null);
+            return new Node<T>(value, node, leftNode, null);
         }
     }
 
-    public SplayNode insert(int key) {
-        size++;
-        return insert(root, key);
+    public boolean insert(T value) {
+        if (!contains(value)) size++;
+        return insert(root, value);
     }
 
-    public SplayNode insert(SplayNode node, int key) {
-        node = split(node, key);
-        keepParent(node);
+    private boolean insert(Node<T> node, T value) {
+        if (root.value == null) {
+            root.value = value;
+            return true;
+        }
+            node = split(node, value);
+            keepParent(node);
         root = node;
-        return node;
+        return true;
     }
 
-    public SplayNode merge(SplayNode left, SplayNode right) {
+    public Node<T> merge(Node<T> left, Node<T> right) {
         if (right == null) {
             root = left;
             return left;
@@ -144,32 +158,37 @@ public class SplayTree implements Set {
             root = right;
             return right;
         }
-        right = find(right, left.key);
+        find(right, left.value);
+        right = root;
         right.left = left;
         left.parent = right;
         return right;
     }
 
-    public SplayNode remove(int key) {
-        if (!findToRemove(root, key)) return null;
-        find(key);
-        setParent(root.left, null);
-        setParent(root.right, null);
-        size--;
-        return merge(root.left, root.right);
-    }
+//    public Node<T remove(int key) {
+//        if (!findToRemove(root, key)) return null;
+//        find(key);
+//        setParent(root.left, null);
+//        setParent(root.right, null);
+//        size--;
+//        return merge(root.left, root.right);
+//    }
 
     public void getTree() {
         getTree(root);
     }
 
-    public void getTree(SplayNode node) {
-        System.out.println(node.key);
+    public void getTree(Node<T> node) {
+        if (node == null) {
+            System.out.println("null");
+            return;
+        }
+        System.out.println(node.value);
         if (node.left != null) {
             System.out.println("left[");
             getTree(node.left);
         }
-        if (node.right != null){
+        if (node.right != null) {
             System.out.println("right[");
             getTree(node.right);
         }
@@ -183,12 +202,12 @@ public class SplayTree implements Set {
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return (root == null);
     }
 
     @Override
     public boolean contains(Object o) {
-        return false;
+        return contains(root, (T) o);
     }
 
     @Override
@@ -203,17 +222,30 @@ public class SplayTree implements Set {
 
     @Override
     public boolean add(Object o) {
-        return false;
+        if (!contains((T) o)) {
+            size++;
+            return insert(root, (T) o);
+        } else return find(root, (T) o);
     }
 
     @Override
     public boolean remove(Object o) {
-        return false;
+        T value = (T) o;
+        if (!contains(value)) return false;
+        find(value);
+        setParent(root.left, null);
+        setParent(root.right, null);
+        size--;
+        merge(root.left, root.right);
+        return true;
     }
 
     @Override
     public boolean addAll(Collection c) {
-        return false;
+        Object[] arr = c.toArray();
+        for (int i = 0; i < arr.length; i++)
+            return add(arr[i]);
+        return true;
     }
 
     @Override
@@ -223,7 +255,10 @@ public class SplayTree implements Set {
 
     @Override
     public boolean removeAll(Collection c) {
-        return false;
+        Object[] arr = c.toArray();
+        for (int i = 0; i < arr.length; i++)
+            return remove(arr[i]);
+        return true;
     }
 
     @Override

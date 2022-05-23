@@ -2,7 +2,7 @@ package com.company;
 
 class SplayNode {
     SplayNode left, right, parent;
-    int key;
+    Object key;
 
     public SplayNode() {
         this(0, null, null, null);
