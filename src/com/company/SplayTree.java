@@ -20,7 +20,7 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         }
     }
 
-    private Node<T> root = new Node<T>(null, null, null, null);
+    private Node<T> root;
 
     private int size = 0;
 
@@ -144,11 +144,6 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         }
     }
 
-//    public boolean insert(T value) {
-//        if (!contains(value)) size++;
-//        return insert(root, value);
-//    }
-
     private boolean insert(Node<T> node, T value) {
         if (root.value == null) {
             root.value = value;
@@ -160,7 +155,7 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         return true;
     }
 
-    public Node<T> merge(Node<T> left, Node<T> right) {
+    private Node<T> merge(Node<T> left, Node<T> right) {
         if (right == null) {
             root = left;
             return left;
@@ -175,15 +170,6 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         left.parent = right;
         return right;
     }
-
-//    public Node<T remove(int key) {
-//        if (!findToRemove(root, key)) return null;
-//        find(key);
-//        setParent(root.left, null);
-//        setParent(root.right, null);
-//        size--;
-//        return merge(root.left, root.right);
-//    }
 
     public void getTree() {
         getTree(root);
@@ -221,23 +207,25 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         return contains(root, (T) o);
     }
 
+    @NotNull
     @Override
     public Iterator<T> iterator() {
         return new SplayTreeIterator(this);
     }
 
     private class SplayTreeIterator implements Iterator<T> {
-        private SplayTree tree;
-        private Node node;
+        private SplayTree<T> tree;
+        private Node<T> node;
 
         private SplayTreeIterator(SplayTree<T> root) {
             tree = root;
+            node = tree.root;
         }
 
         private void reset() {
             if (hasNext()) {
-                if (node.left != null) tree = new SplayTree(node.left);
-                else tree = new SplayTree(node.right);
+                if (node.left != null) tree = new SplayTree<T>(node.left);
+                else tree = new SplayTree<T>(node.right);
             }
         }
 
@@ -249,7 +237,7 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         @Override
         public T next() {
             reset();
-            return (T) tree.root.value;
+            return tree.root.value;
         }
 
         @Override
@@ -258,10 +246,10 @@ public class SplayTree<T extends Comparable<T>> implements Set {
             setParent(root.right, null);
             size--;
             merge(root.left, root.right);
-            return;
         }
     }
 
+    @NotNull
     @Override
     public Object[] toArray() {
         Object[] a = new Object[size];
@@ -276,7 +264,7 @@ public class SplayTree<T extends Comparable<T>> implements Set {
 
     @Override
     public boolean add(Object o) {
-        if (!contains((T) o)) {
+        if (!contains(o)) {
             size++;
             return insert(root, (T) o);
         } else return find(root, (T) o);
@@ -296,7 +284,7 @@ public class SplayTree<T extends Comparable<T>> implements Set {
 
     @Override
     public boolean addAll(Collection c) {
-        for (Object i : c) add((T) i);
+        for (Object i : c) add(i);
         return true;
     }
 
@@ -307,28 +295,28 @@ public class SplayTree<T extends Comparable<T>> implements Set {
 
     @Override
     public boolean removeAll(Collection c) {
-        for (Object i : c) remove((T) i);
+        for (Object i : c) remove(i);
         return true;
     }
 
     @Override
-    public boolean retainAll(Collection c) {
+    public boolean retainAll(@NotNull Collection c) {
         Object[] arr = toArray();
         int startSize = this.size;
         for (Object i : arr) if (!c.contains(i)) remove(i);
-        if (this.size != startSize) return true;
-        return false;
+        return (this.size != startSize);
     }
 
     @Override
     public boolean containsAll(Collection c) {
         for (Object i : c) {
-            if (!contains((T) i))
+            if (!contains(i))
                 return false;
         }
         return true;
     }
 
+    @NotNull
     @Override
     public Object[] toArray(Object[] a) {
         if (a.length < size) a = new Object[size];
