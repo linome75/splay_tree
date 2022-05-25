@@ -21,7 +21,16 @@ public class SplayTree<T extends Comparable<T>> implements Set {
     }
 
     private Node<T> root = new Node<T>(null, null, null, null);
+
     private int size = 0;
+
+    SplayTree(Node<T> node) {
+        root = node;
+    }
+
+    SplayTree() {
+        root = new Node<T>(null, null, null, null);
+    }
 
     public void setParent(Node<T> child, Node<T> parent) {
         if (child != null) child.parent = parent;
@@ -213,8 +222,44 @@ public class SplayTree<T extends Comparable<T>> implements Set {
     }
 
     @Override
-    public Iterator iterator() {
-        return null;
+    public Iterator<T> iterator() {
+        return new SplayTreeIterator(this);
+    }
+
+    private class SplayTreeIterator implements Iterator<T> {
+        private SplayTree tree;
+        private Node node;
+
+        private SplayTreeIterator(SplayTree<T> root) {
+            tree = root;
+        }
+
+        private void reset() {
+            if (hasNext()) {
+                if (node.left != null) tree = new SplayTree(node.left);
+                else tree = new SplayTree(node.right);
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return (tree.size - 1 > 0);
+        }
+
+        @Override
+        public T next() {
+            reset();
+            return (T) tree.root.value;
+        }
+
+        @Override
+        public void remove() {
+            setParent(root.left, null);
+            setParent(root.right, null);
+            size--;
+            merge(root.left, root.right);
+            return;
+        }
     }
 
     @Override
@@ -269,7 +314,9 @@ public class SplayTree<T extends Comparable<T>> implements Set {
     @Override
     public boolean retainAll(Collection c) {
         Object[] arr = toArray();
+        int startSize = this.size;
         for (Object i : arr) if (!c.contains(i)) remove(i);
+        if (this.size != startSize) return true;
         return false;
     }
 
@@ -294,4 +341,5 @@ public class SplayTree<T extends Comparable<T>> implements Set {
         return a;
     }
 }
+
 

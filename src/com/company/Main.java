@@ -14,12 +14,13 @@ public class Main {
         set.add(5);
         set.add(6);
         tree.addAll(set);
-       //tree.getTree();
+       tree.getTree();
         System.out.println();
         //tree.remove(5);
        // tree.getTree();
         Integer[] asd = new Integer[3];
-        System.out.println(tree.toArray()[0]);
+        System.out.println(tree.toArray(asd)[0]);
+        tree.getTree();
 //        tree.remove(4);
     }
 }
