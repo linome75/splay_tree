@@ -210,43 +210,67 @@ public class SplayTree<T extends Comparable<T>> implements Set {
     @NotNull
     @Override
     public Iterator<T> iterator() {
-        return new SplayTreeIterator(this);
+        return new SplayTreeIterator(root);
     }
 
     private class SplayTreeIterator implements Iterator<T> {
-        private SplayTree<T> tree;
         private Node<T> node;
 
-        private SplayTreeIterator(SplayTree<T> root) {
-            tree = root;
-            node = tree.root;
-        }
-
-        private void reset() {
-            if (hasNext()) {
-                if (node.left != null) tree = new SplayTree<T>(node.left);
-                else tree = new SplayTree<T>(node.right);
-            }
+        private SplayTreeIterator(Node<T> root) {
+            this.node = root;
         }
 
         @Override
         public boolean hasNext() {
-            return (tree.size - 1 > 0);
+            return (node != null);
         }
 
         @Override
         public T next() {
-            reset();
-            return tree.root.value;
+            T ret = null;
+            while (hasNext()) {
+                if (node.left == null) {
+                    ret = node.value;
+                    node = node.right;
+                    break;
+                } else {
+                    Node<T> left = node.left;
+                    while (left.right != null && left.right != node) left = left.right;
+
+                    if (left.right == null) {
+                        left.right = node;
+                        node = left.left;
+                    } else {
+                        left.right = null;
+                        ret = node.value;
+                        node = node.right;
+                        break;
+                    }
+                }
+            }
+            return ret;
         }
 
-        @Override
-        public void remove() {
-            setParent(root.left, null);
-            setParent(root.right, null);
-            size--;
-            merge(root.left, root.right);
-        }
+//        @Override
+//        public void remove() {
+//            boolean hasRight = (node.right != null);
+//            if (node.parent != null) {
+//                if (node.parent.left == node) {
+//                    if (hasRight) node.parent.left = node.right;
+//                    else node.parent.left = node.left;
+//                }
+//                else {
+//                    if (hasRight) node.parent.right = node.right;
+//                    else node.parent.right = node.left;
+//                }
+//            }
+//            if (hasRight) {
+//                node.right.parent = node.parent;
+//                node.right.left = node.left;
+//                node.left.parent = node.right;
+//                node.left.right = node.right.left;
+//            }
+//        }
     }
 
     @NotNull
@@ -301,10 +325,10 @@ public class SplayTree<T extends Comparable<T>> implements Set {
 
     @Override
     public boolean retainAll(@NotNull Collection c) {
-        Object[] arr = toArray();
         int startSize = this.size;
-        for (Object i : arr) if (!c.contains(i)) remove(i);
-        return (this.size != startSize);
+        for (Object i : c) if (!contains(i)) remove(i);
+        if (startSize != this.size) return true;
+        else return false;
     }
 
     @Override
